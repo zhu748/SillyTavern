@@ -101,6 +101,17 @@ app.use(responseTime());
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '500mb' }));
 
+// Keep the health endpoint lightweight and unauthenticated for container probes.
+app.all('/healthz', (request, response) => {
+    response.set('Cache-Control', 'no-store');
+
+    if (request.method === 'HEAD') {
+        return response.sendStatus(200);
+    }
+
+    return response.status(200).json({ status: 'ok' });
+});
+
 // CORS Settings //
 const corsEnabled = getConfigValue('cors.enabled', true, 'boolean');
 if (corsEnabled) {
